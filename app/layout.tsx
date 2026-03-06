@@ -6,6 +6,7 @@ import "./globals.css";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 
 const roboto = Roboto({
   weight: ["400", "500", "700"],
@@ -16,12 +17,10 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: "NoteHub",
-  description:
-    "NoteHub is an app for creating, organizing, and managing notes.",
+  description: "NoteHub app with authentication and notes management.",
   openGraph: {
     title: "NoteHub",
-    description:
-      "NoteHub is an app for creating, organizing, and managing notes.",
+    description: "NoteHub app with authentication and notes management.",
     url: "https://your-vercel-url.vercel.app",
     images: [
       {
@@ -44,10 +43,12 @@ export default function RootLayout({ children, modal }: Props) {
     <html lang="en" className={roboto.variable}>
       <body>
         <TanStackProvider>
-          <Header />
-          {children}
-          {modal}
-          <Footer />
+          <AuthProvider>
+            <Header />
+            {children}
+            {modal}
+            <Footer />
+          </AuthProvider>
         </TanStackProvider>
       </body>
     </html>

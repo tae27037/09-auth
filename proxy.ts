@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parse } from "cookie";
 import { checkSession } from "./lib/api/serverApi";
 
 const privateRoutes = ["/profile", "/notes"];
@@ -17,11 +18,30 @@ export async function proxy(request: NextRequest) {
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
   let isAuthenticated = Boolean(accessToken);
+  const response = NextResponse.next();
 
   if (!accessToken && refreshToken) {
     try {
       const sessionResponse = await checkSession();
       const user = sessionResponse.data;
+
+      const setCookieHeader = sessionResponse.headers["set-cookie"];
+
+      if (setCookieHeader) {
+        const cookiesArray = Array.isArray(setCookieHeader)
+          ? setCookieHeader
+          : [setCookieHeader];
+
+        cookiesArray.forEach((cookieString) => {
+          const parsedCookie = parse(cookieString);
+          const [name, value] = Object.entries(parsedCookie)[0] ?? [];
+
+          if (name && value) {
+            response.cookies.set(name, value);
+          }
+        });
+      }
+
       isAuthenticated = Boolean(user);
     } catch {
       isAuthenticated = false;
@@ -36,7 +56,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
